@@ -1,4 +1,4 @@
-# 🚀 Spotify → YouTube Migrator Web
+# Spotify → YouTube Migrator Web
 
 Una herramienta potente y elegante diseñada para migrar tus colecciones de música desde **Spotify** hacia **YouTube Music** de forma automatizada. Ahora con una interfaz web moderna y memoria de sincronización inteligente.
 
