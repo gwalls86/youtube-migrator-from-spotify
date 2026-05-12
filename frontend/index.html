@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify → YouTube Migrator</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #080810;
+      --bg1: #0d0d18;
+      --bg2: #13131f;
+      --bg3: #191926;
+      --bg4: #1f1f2e;
+      --border: rgba(255, 255, 255, 0.055);
+      --border2: rgba(255, 255, 255, 0.10);
+      --text: #ededf8;
+      --text2: #7878a0;
+      --text3: #414160;
+      --spotify: #1db954;
+      --spotify-dim: rgba(29, 185, 84, 0.12);
+      --yt: #ff4444;
+      --yt-dim: rgba(255, 68, 68, 0.10);
+      --purple: #a78bfa;
+      --purple-dim: rgba(167, 139, 250, 0.10);
+      --amber: #fbbf24;
+      --amber-dim: rgba(251, 191, 36, 0.10);
+      --green: #34d399;
+      --green-dim: rgba(52, 211, 153, 0.08);
+      --blue: #60a5fa;
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+    }
+
+    #app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 360px;
+      flex-shrink: 0;
+      background: var(--bg1);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--bg4);
+      border-radius: 2px;
+    }
+
+    .logo {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #2dd4bf 0%, #a78bfa 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .logo-name {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: var(--text3);
+      font-family: 'DM Mono', monospace;
+      margin-top: 1px;
+    }
+
+    .s-section {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .s-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 10px;
+    }
+
+    /* file fields */
+    .file-field {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      margin-bottom: 5px;
+    }
+
+    .file-field:hover {
+      border-color: var(--border2);
+    }
+
+    .file-field.required-missing {
+      border-color: rgba(255, 68, 68, 0.4);
+    }
+
+    .file-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .file-name {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text2);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-edit {
+      font-size: 10px;
+      color: var(--purple);
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+
+    .edit-wrap {
+      display: none;
+      margin-top: 5px;
+    }
+
+    .edit-wrap.open {
+      display: block;
+    }
+
+    .file-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-family: 'DM Mono', monospace;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .file-badge.ok {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .file-badge.err {
+      background: var(--yt-dim);
+      color: var(--yt);
+    }
+
+    input[type=text] {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 7px 10px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type=text]:focus {
+      border-color: var(--purple);
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 7px 10px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      outline: none;
+      resize: vertical;
+      min-height: 52px;
+      transition: border-color 0.15s;
+    }
+
+    textarea:focus {
+      border-color: var(--purple);
+    }
+
+    /* input label */
+    .input-group {
+      margin-bottom: 8px;
+    }
+
+    .input-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .input-label {
+      font-size: 11px;
+      color: var(--text2);
+      margin-bottom: 4px;
+    }
+
+    /* privacy tabs */
+    .privacy-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+    }
+
+    .priv-tab {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .priv-tab:hover {
+      border-color: var(--border2);
+    }
+
+    .priv-tab.active {
+      background: var(--purple-dim);
+      border-color: var(--purple);
+    }
+
+    .priv-icon {
+      font-size: 16px;
+      margin-bottom: 3px;
+    }
+
+    .priv-name {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text2);
+    }
+
+    .priv-tab.active .priv-name {
+      color: var(--purple);
+    }
+
+    /* progress resume card */
+    .resume-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+
+    .resume-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .resume-label {
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .resume-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .resume-hint {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+
+    .btn-danger {
+      width: 100%;
+      margin-top: 8px;
+      padding: 7px 12px;
+      background: transparent;
+      border: 1px solid rgba(255, 68, 68, 0.3);
+      color: var(--yt);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all 0.15s;
+    }
+
+    .btn-danger:hover {
+      background: var(--yt-dim);
+    }
+
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .main-header {
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .main-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .main-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 3px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .state-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .state-pill.idle {
+      background: var(--bg3);
+      color: var(--text3);
+    }
+
+    .state-pill.running {
+      background: var(--spotify-dim);
+      color: var(--spotify);
+    }
+
+    .state-pill.done {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .state-pill.quota {
+      background: var(--amber-dim);
+      color: var(--amber);
+    }
+
+    .state-pill.error {
+      background: var(--yt-dim);
+      color: var(--yt);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spin {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.5
+      }
+    }
+
+    .pulse {
+      animation: pulse 1.5s ease infinite;
+    }
+
+    /* stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat {
+      background: var(--bg);
+      padding: 13px 18px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+
+    .stat-val {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 3px 0 2px;
+      letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+
+    .stat-val.green {
+      color: var(--green);
+    }
+
+    .stat-val.yt {
+      color: var(--yt);
+    }
+
+    .stat-val.amber {
+      color: var(--amber);
+    }
+
+    .stat-val.purple {
+      color: var(--purple);
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    /* progress */
+    .progress-wrap {
+      padding: 14px 24px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .prog-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 7px;
+    }
+
+    .prog-song {
+      font-size: 12px;
+      color: var(--text2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 75%;
+    }
+
+    .prog-frac {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'DM Mono', monospace;
+      flex-shrink: 0;
+    }
+
+    .prog-track {
+      height: 3px;
+      background: var(--bg3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+      background: linear-gradient(90deg, var(--spotify), var(--purple));
+    }
+
+    /* auth banner */
+    .auth-banner {
+      margin: 10px 24px;
+      padding: 12px 14px;
+      background: var(--amber-dim);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .auth-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .auth-text {
+      font-size: 12px;
+      color: var(--amber);
+      line-height: 1.5;
+    }
+
+    .auth-text strong {
+      font-weight: 700;
+    }
+
+    /* playlist link */
+    .pl-link {
+      margin: 0 24px 0;
+      padding: 10px 14px;
+      background: var(--yt-dim);
+      border: 1px solid rgba(255, 68, 68, 0.25);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: border-color 0.15s;
+    }
+
+    .pl-link:hover {
+      border-color: var(--yt);
+    }
+
+    .pl-link-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .pl-link-text {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--yt);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* log */
+    .log-wrap {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .log-header {
+      padding: 9px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .log-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+
+    .log-clear {
+      font-size: 11px;
+      color: var(--text3);
+      cursor: pointer;
+    }
+
+    .log-clear:hover {
+      color: var(--text2);
+    }
+
+    .log-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 24px 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      line-height: 1.9;
+    }
+
+    .log-body::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .log-body::-webkit-scrollbar-thumb {
+      background: var(--bg4);
+      border-radius: 2px;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 12px;
+    }
+
+    .log-ts {
+      color: var(--text3);
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .log-msg {
+      word-break: break-all;
+    }
+
+    .log-msg.SUCCESS {
+      color: var(--green);
+    }
+
+    .log-msg.ERROR {
+      color: var(--yt);
+    }
+
+    .log-msg.WARNING {
+      color: var(--amber);
+    }
+
+    .log-msg.INFO {
+      color: var(--text2);
+    }
+
+    .log-msg.DIM {
+      color: var(--text3);
+    }
+
+    .log-empty {
+      color: var(--text3);
+      font-size: 12px;
+      text-align: center;
+      padding: 28px 0;
+    }
+
+    /* actions */
+    .action-bar {
+      padding: 12px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 7px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--spotify) 0%, #17a84a 100%);
+      color: #080810;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      filter: brightness(1.1);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .btn-stop {
+      background: transparent;
+      border: 1px solid rgba(255, 68, 68, 0.3);
+      color: var(--yt);
+      padding: 10px 16px;
+    }
+
+    .btn-stop:hover:not(:disabled) {
+      background: var(--yt-dim);
+    }
+
+    .btn-stop:disabled {
+      opacity: 0.2;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- ── SIDEBAR ─────────────────────────────────────────────────────────── -->
+    <div class="sidebar">
+      <!-- Logo -->
+      <div class="logo">
+        <div class="logo-icon"><img src="icon.png" style="width: 36px; height: 36px;"></div>
+        <div>
+          <div class="logo-name">Spotify to Youtube Migrator</div>
+          <div class="logo-sub">Powered by gwalls86</div>
+        </div>
+      </div>
+
+      <!-- Archivos requeridos -->
+      <div class="s-section">
+        <div class="s-label">Archivos requeridos</div>
+
+        <!-- CSV -->
+        <div class="file-field" :class="{ 'required-missing': !cfg.csv_file }" @click="openFilePicker('csv_file')">
+          <span class="file-icon">📊</span>
+          <span class="file-name">{{ cfg.csv_file ? fileName(cfg.csv_file) : 'Seleccionar CSV de Exportify' }}</span>
+        </div>
+
+        <!-- client_secrets.json -->
+        <div class="file-field" :class="{ 'required-missing': !cfg.client_secrets }"
+          @click="openFilePicker('client_secrets')">
+          <span class="file-icon">🔑</span>
+          <span class="file-name">{{ cfg.client_secrets ? fileName(cfg.client_secrets) : 'client_secrets.json' }}</span>
+        </div>
+
+        <!-- ytmusic_auth.json -->
+        <div class="file-field" :class="{ 'required-missing': !cfg.ytmusic_auth }"
+          @click="openFilePicker('ytmusic_auth')">
+          <span class="file-icon">🎵</span>
+          <span class="file-name">{{ cfg.ytmusic_auth ? fileName(cfg.ytmusic_auth) : 'ytmusic_auth.json' }}</span>
+        </div>
+      </div>
+
+      <!-- Playlist -->
+      <div class="s-section">
+        <div class="s-label">Playlist de destino</div>
+        <div class="input-group">
+          <div class="input-label">Nombre de la playlist</div>
+          <input type="text" v-model="cfg.playlist_title" placeholder="🎵 Mis canciones de Spotify">
+        </div>
+        <div class="input-group">
+          <div class="input-label">Descripción</div>
+          <textarea v-model="cfg.playlist_desc" placeholder="Descripción de la playlist…"></textarea>
+        </div>
+        <div class="input-group" style="margin-top:10px">
+          <div class="input-label" style="margin-bottom:8px">Privacidad</div>
+          <div class="privacy-tabs">
+            <div class="priv-tab" :class="{ active: cfg.privacy === 'private' }" @click="cfg.privacy = 'private'">
+              <div class="priv-icon">🔒</div>
+              <div class="priv-name">Privada</div>
+            </div>
+            <div class="priv-tab" :class="{ active: cfg.privacy === 'unlisted' }" @click="cfg.privacy = 'unlisted'">
+              <div class="priv-icon">🔗</div>
+              <div class="priv-name">No listada</div>
+            </div>
+            <div class="priv-tab" :class="{ active: cfg.privacy === 'public' }" @click="cfg.privacy = 'public'">
+              <div class="priv-icon">🌐</div>
+              <div class="priv-name">Pública</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progreso guardado -->
+      <div class="s-section">
+        <div class="s-label">Progreso guardado</div>
+        <div class="input-group">
+          <div class="input-label">Archivo de progreso</div>
+          <input type="text" v-model="cfg.progress_file" placeholder="progress.json">
+        </div>
+        <div class="resume-card" v-if="savedProgress.exists">
+          <div class="resume-row">
+            <span class="resume-label">Canciones ya procesadas</span>
+            <span class="resume-val">{{ savedProgress.done_count }}</span>
+          </div>
+          <div class="resume-hint" v-if="savedProgress.playlist_id">
+            Playlist ID: {{ savedProgress.playlist_id?.slice(0, 16) }}…
+          </div>
+          <div class="resume-hint">La próxima ejecución reanudará desde aquí</div>
+          <button class="btn-danger" @click="resetProgress">🗑 Borrar progreso (empezar de cero)</button>
+        </div>
+        <div v-else style="font-size:11px;color:var(--text3);margin-top:4px">
+          Sin historial guardado — se procesará el CSV completo
+        </div>
+      </div>
+
+      <!-- Archivos internos -->
+      <div class="s-section">
+        <div class="s-label">Archivos internos</div>
+        <div class="input-group">
+          <div class="input-label">Token OAuth (token.pickle)</div>
+          <input type="text" v-model="cfg.token_file" placeholder="token.pickle">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
+    <div class="main">
+      <div class="main-header">
+        <div>
+          <div class="main-title">{{ mainTitle }}</div>
+          <div class="main-sub">{{ mainSub }}</div>
+        </div>
+        <div class="state-pill" :class="statePillClass">
+          <span v-if="state === 'running'" class="spin">⟳</span>
+          <span v-else-if="state === 'done'">✓</span>
+          <span v-else-if="state === 'quota'" class="pulse">⏰</span>
+          <span v-else-if="state === 'error'">✗</span>
+          {{ { idle: 'En espera', running: 'Migrando', done: 'Completado', quota: 'Cuota agotada', error: 'Error'
+          }[state] }}
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-label">Agregadas</div>
+          <div class="stat-val green">{{ stats.added }}</div>
+          <div class="stat-sub">a YouTube esta sesión</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Ya procesadas</div>
+          <div class="stat-val purple">{{ stats.skipped }}</div>
+          <div class="stat-sub">de sesiones anteriores</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">No encontradas</div>
+          <div class="stat-val amber">{{ stats.not_found }}</div>
+          <div class="stat-sub">en YouTube Music</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Progreso</div>
+          <div class="stat-val" :class="stats.total ? 'green' : ''">
+            {{ stats.total ? Math.round(stats.current / stats.total * 100) + '%' : '–' }}
+          </div>
+          <div class="stat-sub">{{ stats.current }} / {{ stats.total || '–' }}</div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-wrap">
+        <div class="prog-meta">
+          <span class="prog-song">{{ progress.label || 'En espera…' }}</span>
+          <span class="prog-frac">{{ progress.total ? progress.current + ' / ' + progress.total : '0 / 0' }}</span>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" :style="{ width: progressPct + '%' }"></div>
+        </div>
+      </div>
+
+      <!-- Auth banner (aparece solo cuando se abre el navegador de OAuth) -->
+      <div class="auth-banner" v-if="authNeeded">
+        <span class="auth-icon">🌐</span>
+        <div class="auth-text">
+          <strong>Se abrió el navegador para autenticación Google OAuth.</strong><br>
+          Inicia sesión con tu cuenta de YouTube y autoriza el acceso. Una vez que autorices, la migración continuará
+          automáticamente.
+        </div>
+      </div>
+
+      <!-- Playlist link (aparece al terminar) -->
+      <a class="pl-link" :href="playlistUrl" target="_blank" v-if="playlistId">
+        <span class="pl-link-icon">▶</span>
+        <span class="pl-link-text">{{ playlistUrl }}</span>
+      </a>
+
+      <!-- Log -->
+      <div class="log-wrap">
+        <div class="log-header">
+          <span class="log-title">Actividad</span>
+          <span class="log-clear" @click="logs = []">limpiar</span>
+        </div>
+        <div class="log-body" ref="logBody">
+          <div v-if="logs.length === 0" class="log-empty">
+            Sin actividad · configura los archivos y presiona Iniciar migración
+          </div>
+          <div v-for="(line, i) in logs" :key="i" class="log-line">
+            <span class="log-ts">{{ line.ts }}</span>
+            <span class="log-msg" :class="line.level">{{ line.message }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="action-bar">
+        <button class="btn btn-primary" :disabled="state === 'running'" @click="startMigration">
+          <span v-if="state !== 'running'">▶ Iniciar migración</span>
+          <span v-else><span class="spin">⟳</span> Migrando…</span>
+        </button>
+        <button class="btn btn-stop" :disabled="state !== 'running'" @click="stopMigration">⬛ Detener</button>
+        <button class="btn btn-stop" @click="closeApp">✖ Salir</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, computed, onMounted, nextTick, watch } = Vue;
+
+    const API = 'http://localhost:8003/api';
+
+    createApp({
+      setup() {
+        const cfg = reactive({
+          csv_file: '',
+          client_secrets: 'client_secrets.json',
+          ytmusic_auth: 'ytmusic_auth.json',
+          progress_file: 'progress.json',
+          token_file: 'token.pickle',
+          playlist_title: '🎵 Mis canciones de Spotify',
+          playlist_desc: 'Migrada desde Spotify con script automático',
+          privacy: 'private',
+        });
+
+        const state = ref('idle');
+        const logs = ref([]);
+        const progress = reactive({ current: 0, total: 0, label: '' });
+        const stats = reactive({ added: 0, skipped: 0, not_found: 0, total: 0, current: 0 });
+        const savedProgress = reactive({ exists: false, done_count: 0, playlist_id: null });
+        const authNeeded = ref(false);
+        const playlistId = ref('');
+        const editOpen = reactive({ csv: false, secrets: false, ytauth: false });
+        const logBody = ref(null);
+        let eventSource = null;
+
+        const progressPct = computed(() =>
+          progress.total ? Math.round((progress.current / progress.total) * 100) : 0
+        );
+        const playlistUrl = computed(() =>
+          playlistId.value ? `https://www.youtube.com/playlist?list=${playlistId.value}` : ''
+        );
+        const statePillClass = computed(() => state.value);
+
+        const mainTitle = computed(() => ({
+          idle: 'Listo para migrar',
+          running: 'Migración en curso',
+          done: 'Migración completada',
+          quota: 'Cuota agotada',
+          error: 'Error en la migración',
+        }[state.value]));
+
+        const mainSub = computed(() => {
+          if (state.value === 'idle') return 'Carga el CSV de Exportify y los archivos de credenciales';
+          if (state.value === 'running') return `"${cfg.playlist_title}" · ${cfg.privacy}`;
+          if (state.value === 'done') return `${stats.added} canciones agregadas · ${stats.not_found} no encontradas`;
+          if (state.value === 'quota') return 'La cuota de YouTube se resetea ~2am Colombia';
+          return 'Revisa el log para ver detalles';
+        });
+
+        function fileName(path) {
+          return path.split(/[\\/]/).pop();
+        }
+
+        function toggleEdit(field) { editOpen[field] = !editOpen[field]; }
+
+        function onCsvChange() {
+          toggleEdit('csv');
+          // auto-completar nombre de playlist y archivo de progreso
+          if (cfg.csv_file) {
+            const stem = fileName(cfg.csv_file).replace(/\.csv$/i, '');
+            const clean = stem.replace('playlist-', '').replace(/-/g, ' ')
+              .split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            cfg.playlist_title = `🎵 ${clean}`;
+            cfg.progress_file = `progress_${stem}.json`;
+            loadSavedProgress();
+          }
+        }
+
+        async function openFolderPicker(field) {
+          try {
+            const res = await fetch(`${API}/select-folder`);
+            const data = await res.json();
+            if (data.folder) {
+              cfg[field] = data.folder;
+              if (field === 'csv_file') {
+                onCsvChange();
+              }
+            }
+          } catch (err) {
+            addLog('Error al abrir el selector de carpetas', 'ERROR');
+          }
+        }
+
+        async function openFilePicker(field) {
+          try {
+            const res = await fetch(`${API}/select-file`);
+            const data = await res.json();
+            if (data.file) {
+              cfg[field] = data.file;
+              if (field === 'csv_file') {
+                onCsvChange();
+              }
+            }
+          } catch (err) {
+            addLog('Error al abrir el selector de archivos', 'ERROR');
+          }
+        }
+
+        async function closeApp() {
+          if (!confirm('¿Estás seguro de que quieres cerrar la aplicación?')) return;
+          try {
+            await fetch(`${API}/shutdown`, { method: 'POST' });
+            window.close();
+          } catch (err) {
+            addLog('Error al apagar el servidor', 'ERROR');
+          }
+        }
+
+        function addLog(message, level = 'INFO', ts = null) {
+          logs.value.push({ message, level, ts: ts || new Date().toLocaleTimeString('es-CO', { hour12: false }) });
+          nextTick(() => { if (logBody.value) logBody.value.scrollTop = logBody.value.scrollHeight; });
+        }
+
+        async function loadSavedProgress() {
+          if (!cfg.progress_file) return;
+          try {
+            const res = await fetch(`${API}/progress?progress_file=${encodeURIComponent(cfg.progress_file)}`);
+            const data = await res.json();
+            Object.assign(savedProgress, data);
+          } catch { }
+        }
+
+        async function resetProgress() {
+          if (!confirm(`¿Borrar el progreso guardado en "${cfg.progress_file}"? Esto hará que la próxima ejecución procese el CSV completo.`)) return;
+          try {
+            const res = await fetch(`${API}/reset-progress`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ progress_file: cfg.progress_file }),
+            });
+            const data = await res.json();
+            if (data.ok) {
+              savedProgress.exists = false;
+              savedProgress.done_count = 0;
+              savedProgress.playlist_id = null;
+              addLog('Progreso eliminado. La próxima ejecución procesará el CSV completo.', 'WARNING');
+            }
+          } catch { }
+        }
+
+        async function loadConfig() {
+          try {
+            const res = await fetch(`${API}/config`);
+            const data = await res.json();
+            const src = data.migrator || (data.csv_file !== undefined ? data : null);
+            if (src) {
+              Object.assign(cfg, src);
+              if (cfg.progress_file) loadSavedProgress();
+            }
+          } catch { }
+        }
+
+        async function saveConfig() {
+          try {
+            await fetch(`${API}/config`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ config: { migrator: { ...cfg } } }),
+            });
+          } catch { }
+        }
+
+        function connectSSE() {
+          if (eventSource) { eventSource.close(); eventSource = null; }
+          eventSource = new EventSource(`${API}/events`);
+          eventSource.onmessage = (e) => {
+            const { type, payload } = JSON.parse(e.data);
+            if (type === 'log') addLog(payload.message, payload.level, payload.ts);
+            else if (type === 'progress') Object.assign(progress, payload);
+            else if (type === 'stats') Object.assign(stats, payload);
+            else if (type === 'auth_needed') authNeeded.value = true;
+            else if (type === 'status') { } // status usado internamente
+            else if (type === 'done') {
+              authNeeded.value = false;
+              if (payload.playlist_id) playlistId.value = payload.playlist_id;
+              if (!payload.success && payload.summary?.includes('uota')) {
+                state.value = 'quota';
+              } else {
+                state.value = payload.success ? 'done' : 'error';
+              }
+              loadSavedProgress();
+              saveConfig();
+            }
+          };
+        }
+
+        async function startMigration() {
+          if (!cfg.csv_file) { addLog('Selecciona el CSV de Exportify antes de continuar.', 'ERROR'); return; }
+          if (!cfg.client_secrets) { addLog('Especifica la ruta de client_secrets.json.', 'ERROR'); return; }
+          if (!cfg.ytmusic_auth) { addLog('Especifica la ruta de ytmusic_auth.json.', 'ERROR'); return; }
+
+          logs.value = [];
+          authNeeded.value = false;
+          playlistId.value = '';
+          Object.assign(stats, { added: 0, skipped: 0, not_found: 0, total: 0, current: 0 });
+          Object.assign(progress, { current: 0, total: 0, label: '' });
+          state.value = 'running';
+
+          try {
+            const res = await fetch(`${API}/start`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ...cfg }),
+            });
+            const data = await res.json();
+            if (!data.ok) { addLog(data.error || 'Error al iniciar', 'ERROR'); state.value = 'error'; }
+          } catch {
+            addLog('No se puede conectar al backend. ¿Está corriendo main.py?', 'ERROR');
+            state.value = 'error';
+          }
+        }
+
+        async function stopMigration() {
+          try { await fetch(`${API}/stop`, { method: 'POST' }); } catch { }
+        }
+
+        // Recargar progreso cuando cambie el progress_file
+        watch(() => cfg.progress_file, () => loadSavedProgress());
+
+        onMounted(() => { loadConfig(); connectSSE(); });
+
+        return {
+          cfg, state, logs, progress, stats, savedProgress, authNeeded, playlistId,
+          editOpen, logBody, progressPct, playlistUrl, statePillClass, mainTitle, mainSub,
+          fileName, toggleEdit, onCsvChange, resetProgress,
+          openFolderPicker, openFilePicker, closeApp,
+          startMigration, stopMigration,
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+
+</html>
