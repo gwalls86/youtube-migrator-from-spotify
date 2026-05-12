@@ -84,10 +84,4 @@ Simplemente ejecuta el archivo automatizado en la raíz del proyecto:
 Esto abrirá la interfaz en tu navegador por defecto. Configura las rutas de tus archivos y presiona **Iniciar migración**.
 
 ---
-
-## 📝 Créditos y Versión
-- **Versión**: 1.5.0
-- **Desarrollado por**: **gwalls86**
-
----
-> **Privacidad**: Tus credenciales y archivos CSV están protegidos por el archivo `.gitignore` y nunca se subirán a repositorios públicos si clonas este proyecto.
+*Desarrollado por **gwalls86***
