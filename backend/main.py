@@ -7,7 +7,7 @@ Uso:
     python main.py
 
 Luego abre frontend/index.html en tu navegador.
-Puerto: 8003
+Puerto: 8004
 """
 
 from __future__ import annotations
@@ -618,7 +618,7 @@ def select_file():
 if __name__ == "__main__":
     print("=" * 60)
     print("  Spotify -> YouTube Migrator -- Backend local")
-    print("  http://localhost:8003")
+    print("  http://localhost:8004")
     print("  Abre frontend/index.html en tu navegador")
     print("=" * 60)
-    uvicorn.run(app, host="127.0.0.1", port=8003, log_level="warning")
+    uvicorn.run(app, host="127.0.0.1", port=8004, log_level="warning")
