@@ -1,84 +1,93 @@
-# Spotify → YouTube Migrator Web
+# Spotify → YouTube Migrator
 
-Una herramienta potente y elegante diseñada para migrar tus colecciones de música desde **Spotify** hacia **YouTube Music** de forma automatizada. Ahora con una interfaz web moderna y memoria de sincronización inteligente.
+Una herramienta profesional basada en web diseñada para migrar tus colecciones de música desde **Spotify** hacia **YouTube Music** de forma automatizada. Ahora con una interfaz web moderna, memoria de sincronización inteligente y selector de archivos nativo.
 
-![Versión](https://img.shields.io/badge/version-1.2-green)
+![Versión](https://img.shields.io/badge/version-1.5-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
+![Python](https://img.shields.io/badge/python-3.10+-yellow)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
 ## 🎨 Icono del Proyecto
 
 <p align="center">
-  <img src="frontend/icon.png" width="150" alt="Spotify to YouTube Migrator Icon">
+  <img src="frontend/icon.png" width="160" alt="Migrator Icon">
 </p>
 
 ---
 
 ## 🚀 Características Principales
 
-*   **INTERFAZ WEB**: Experiencia visual premium y moderna desarrollada con **Vue 3** y un backend en **FastAPI**.
-*   **SELECTOR DE ARCHIVOS NATIVO**: Permite seleccionar archivos CSV y JSON directamente usando el diálogo del sistema operativo.
-*   **BÚSQUEDA INTELIGENTE**: Algoritmo que prioriza **Videos Oficiales (OMV)** y Audios de alta calidad, filtrando versiones "karaoke", "covers" o "letras".
-*   **MEMORIA DE SINCRONIZACIÓN**: El sistema recuerda el progreso por cada archivo CSV. Si reanudas una migración, el script sabrá exactamente dónde continuar.
-*   **AUTO-INICIO**: Incluye un script `start.bat` para iniciar el servidor y abrir la interfaz con un solo clic.
+### 1. Migración Inteligente
+*   **Búsqueda Avanzada**: Algoritmo que prioriza videos oficiales y audios de alta calidad, ignorando "karaokes", "covers" o videos de fans.
+*   **Memoria de Progreso**: Guarda el estado de la migración por cada archivo CSV. Si se detiene, continúa exactamente donde se quedó.
+*   **Manejo de Duplicados**: No añade canciones que ya estén en la playlist de destino.
+
+### 2. Interfaz Web Premium
+*   **Diseño Oscuro y Moderno**: Desarrollado con **Vue 3** y un backend en **FastAPI** para una experiencia fluida.
+*   **Selector Nativo**: Abre el diálogo de Windows para seleccionar tus archivos CSV y de credenciales.
+*   **Edición Manual**: Permite editar las rutas directamente si lo prefieres (usando el icono ✏️).
 
 ---
 
-## 🛠️ Requisitos Previos
+## 🛠️ Requisitos del Sistema
 
-1.  **Python 3.10 o superior**: [Descargar aquí](https://www.python.org/downloads/). (Marca "Add Python to PATH").
-2.  **Exportify**: Ve a [Exportify](https://exportify.net/), conéctate con Spotify y descarga el archivo **CSV** de las playlists que quieras migrar.
-3.  **Dependencias**:
-    ```bash
-    pip install fastapi uvicorn google-auth google-auth-oauthlib google-api-python-client ytmusicapi
-    ```
+Esta herramienta está optimizada para **Windows 10/11** y requiere:
+
+1.  **Python 3.10 o superior**.
+2.  **Dependencias**: `fastapi`, `uvicorn`, `google-auth`, `google-auth-oauthlib`, `google-api-python-client`, `ytmusicapi`.
 
 ---
 
-## 📦 Configuración de Credenciales
+## 📦 Guía de Uso
 
-Para que el script funcione, necesitas dos archivos de autorización en la carpeta del proyecto (o seleccionarlos desde la interfaz):
+### 1. Instalar Dependencias
+Abre una terminal en la carpeta del proyecto e instala las librerías necesarias:
+```powershell
+pip install fastapi uvicorn google-auth google-auth-oauthlib google-api-python-client ytmusicapi
+```
 
-### 1. Google Cloud (`client_secrets.json`)
-Permite al script crear playlists en tu cuenta de YouTube.
-1.  Crea un proyecto en [Google Cloud Console](https://console.cloud.google.com/).
-2.  Habilita la **YouTube Data API v3**.
-3.  En "Credenciales", crea un **ID de cliente de OAuth** de tipo **App de escritorio**.
-4.  Descarga el JSON, renómbralo a `client_secrets.json` y ponlo en la carpeta raíz.
+### 2. Obtener tu Música de Spotify
+1.  Ve a [Exportify](https://exportify.net/).
+2.  Inicia sesión con tu cuenta de Spotify.
+3.  Descarga el archivo **CSV** de la playlist que deseas migrar.
 
-### 2. YouTube Music (`ytmusic_auth.json`)
-Permite buscar canciones sin consumir cuota de API.
-1.  Abre una terminal y ejecuta:
-    ```bash
+### 3. Configuración de Credenciales (¡Importante!)
+Para que el script pueda interactuar con YouTube, necesitas dos autorizaciones:
+
+#### A. Google Cloud (`client_secrets.json`)
+*Necesario para crear la playlist en tu cuenta de YouTube.*
+1.  Ve a [Google Cloud Console](https://console.cloud.google.com/).
+2.  Crea un nuevo proyecto.
+3.  Habilita la **YouTube Data API v3**.
+4.  Configura la **Pantalla de consentimiento de OAuth** (Tipo: Externo). **¡IMPORTANTE!** Añade tu propio correo electrónico en "Usuarios de prueba" (Test users). Si no lo haces, recibirás un error de autorización.
+5.  En **Credenciales**, crea un **ID de cliente de OAuth** (Tipo: Aplicación de escritorio).
+6.  Descarga el JSON, renómbralo a `client_secrets.json` y colócalo en la raíz del proyecto.
+
+#### B. YouTube Music (`ytmusic_auth.json`)
+*Necesario para buscar canciones sin límites de cuota.*
+1.  Abre una terminal en la carpeta del proyecto y ejecuta:
+    ```powershell
     python -m ytmusicapi browser
     ```
-2.  Sigue las instrucciones para copiar tus "headers" desde el navegador.
-3.  El archivo generado se llamará `oauth.json`. Renómbralo a `ytmusic_auth.json` y ponlo en la carpeta raíz.
+2.  Sigue las instrucciones en pantalla para copiar las cabeceras (headers) desde tu navegador.
+3.  El comando generará un archivo (usualmente `oauth.json`). Renómbralo a `ytmusic_auth.json` y colócalo en la raíz del proyecto.
 
 ---
 
-## 🎮 Guía de Uso
-
-1.  **Ejecuta el script**:
-    Doble clic en `start.bat` en la raíz del proyecto.
-2.  **Uso de la Interfaz**:
-    *   Se abrirá la interfaz en tu navegador.
-    *   Haz clic en los campos para seleccionar tu archivo CSV de Exportify y los archivos de credenciales (si no están en la raíz).
-    *   Pulsa **Iniciar migración**.
-3.  **Autorización**: La primera vez se abrirá el navegador para autorizar tu cuenta de Google.
+## 🚀 Iniciar la Aplicación
+Simplemente ejecuta el archivo automatizado en la raíz del proyecto:
+```powershell
+.\start.bat
+```
+Esto abrirá la interfaz en tu navegador por defecto. Configura las rutas de tus archivos y presiona **Iniciar migración**.
 
 ---
 
-## 🏗️ Estructura de Archivos
-
-*   `backend/main.py`: Servidor FastAPI.
-*   `frontend/index.html`: Interfaz de usuario (Vue 3).
-*   `start.bat`: Script de inicio rápido.
+## 📝 Créditos y Versión
+- **Versión**: 1.5.0
+- **Desarrollado por**: **gwalls86**
 
 ---
-
-> **Privacidad**: Tus archivos de credenciales (`client_secrets.json`, `ytmusic_auth.json`) y tokens están incluidos en el `.gitignore` para que nunca se suban a la nube.
-
----
-*Desarrollado por **gwalls86***
+> **Privacidad**: Tus credenciales y archivos CSV están protegidos por el archivo `.gitignore` y nunca se subirán a repositorios públicos si clonas este proyecto.
