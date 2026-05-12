@@ -762,6 +762,10 @@
         <div class="file-field" :class="{ 'required-missing': !cfg.csv_file }" @click="openFilePicker('csv_file')">
           <span class="file-icon">📊</span>
           <span class="file-name">{{ cfg.csv_file ? fileName(cfg.csv_file) : 'Seleccionar CSV de Exportify' }}</span>
+          <span class="file-edit" @click.stop="toggleEdit('csv')">✏️</span>
+        </div>
+        <div class="edit-wrap" :class="{ open: editOpen.csv }">
+          <input type="text" v-model="cfg.csv_file" @change="onCsvChange">
         </div>
 
         <!-- client_secrets.json -->
@@ -769,6 +773,10 @@
           @click="openFilePicker('client_secrets')">
           <span class="file-icon">🔑</span>
           <span class="file-name">{{ cfg.client_secrets ? fileName(cfg.client_secrets) : 'client_secrets.json' }}</span>
+          <span class="file-edit" @click.stop="toggleEdit('secrets')">✏️</span>
+        </div>
+        <div class="edit-wrap" :class="{ open: editOpen.secrets }">
+          <input type="text" v-model="cfg.client_secrets">
         </div>
 
         <!-- ytmusic_auth.json -->
@@ -776,6 +784,10 @@
           @click="openFilePicker('ytmusic_auth')">
           <span class="file-icon">🎵</span>
           <span class="file-name">{{ cfg.ytmusic_auth ? fileName(cfg.ytmusic_auth) : 'ytmusic_auth.json' }}</span>
+          <span class="file-edit" @click.stop="toggleEdit('ytauth')">✏️</span>
+        </div>
+        <div class="edit-wrap" :class="{ open: editOpen.ytauth }">
+          <input type="text" v-model="cfg.ytmusic_auth">
         </div>
       </div>
 

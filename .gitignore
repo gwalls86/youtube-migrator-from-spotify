@@ -7,6 +7,7 @@ oauth.json
 # Progreso e Historial
 progress_*.json
 spotify_migrator_config.json
+*.csv
 
 # Python
 __pycache__/
